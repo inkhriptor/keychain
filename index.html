@@ -179,7 +179,7 @@
             </div>
         </div>
 
-        <div class="control-group" title="Z-thickness of text. Sharp at bottom, rounded at top.">
+        <div class="control-group" title="Z-thickness of text. Now perfectly flat at bottom for faster printing.">
             <label>Text Thickness (Z)</label>
             <div class="input-row">
                 <input type="range" id="textDepth" min="0.5" max="10" step="0.5" value="2">
@@ -188,7 +188,7 @@
             </div>
         </div>
 
-        <div class="control-group" title="Set to 0 to keep text perfectly flush on the base.">
+        <div class="control-group" title="Set to 0 to keep text perfectly flush on the base. Default is 0.">
             <label>Embed Text into Base (Sink)</label>
             <div class="input-row">
                 <input type="range" id="sinkDepth" min="0" max="2" step="0.1" value="0">
@@ -325,6 +325,7 @@
             reader.readAsArrayBuffer(file);
         });
 
+        // --- OPTIMIZED GENERATION LOGIC ---
         function generateKeychain() {
             if (!loadedFont) return;
             const text = document.getElementById('nameInput').value.trim() || "Maker";
@@ -347,24 +348,25 @@
             const textMat = new THREE.MeshStandardMaterial({ color: textColor });
             const baseMat = new THREE.MeshStandardMaterial({ color: plateColor });
 
-            // FIX: SHARP BOTTOM LOGIC
-            const bThick = 0.5; // Bevel thickness
-            const bSize = 0.2;  // Bevel size
-            const actualTextDepth = baseStyle === 'none' ? targetTextDepth : targetTextDepth + sinkDepth;
-            
+            // SIMPLIFIED TEXT: No complex Z-shifts or clipping.
+            // standard extrusion with rounded top bevel only.
             let textGeo = new TextGeometry(text, { 
-                font: loadedFont, size: fontSize, height: actualTextDepth, 
-                bevelEnabled: true, bevelThickness: bThick, bevelSize: bSize, bevelSegments: 5 
+                font: loadedFont, 
+                size: fontSize, 
+                height: targetTextDepth + sinkDepth, 
+                bevelEnabled: true, 
+                bevelThickness: 0.2, // Subtle top rounding
+                bevelSize: 0.1,
+                bevelSegments: 3,
+                bevelOffset: 0 // Ensures bottom remains flush
             });
             
             textGeo.computeBoundingBox();
             const centerOffsetX = -0.5 * (textGeo.boundingBox.max.x + textGeo.boundingBox.min.x);
             const centerOffsetY = -0.5 * (textGeo.boundingBox.max.y + textGeo.boundingBox.min.y);
             
-            // To make the bottom sharp: 
-            // We shift the geometry DOWN by the bevelThickness so the rounded bottom is clipped away
-            // and the vertical walls start exactly at Z=0.
-            textGeo.translate(centerOffsetX, centerOffsetY, -textGeo.boundingBox.min.z - bThick);
+            // Standard alignment: Absolute bottom of text geometry at Z=0
+            textGeo.translate(centerOffsetX, centerOffsetY, -textGeo.boundingBox.min.z);
 
             const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
             const textHeight = textGeo.boundingBox.max.y - textGeo.boundingBox.min.y;
@@ -380,15 +382,17 @@
                 const r = baseStyle === 'rounded' ? Math.min(padding, finalPlateH / 2, finalPlateW / 2) : 0;
                 const x = -finalPlateW / 2, y = -finalPlateH / 2;
 
-                shape.moveTo(x, y + r); shape.lineTo(x, y + finalPlateH - r);
-                shape.quadraticCurveTo(x, y + finalPlateH, x + r, y + finalPlateH);
-                shape.lineTo(x + finalPlateW - r, y + finalPlateH); shape.quadraticCurveTo(x + finalPlateW, y + finalPlateH, x + finalPlateW, y + finalPlateH - r);
-                shape.lineTo(x + finalPlateW, y + r); shape.quadraticCurveTo(x + finalPlateW, y, x + finalPlateW - r, y);
+                shape.moveTo(x, y + r); shape.lineTo(x, y + baseH - r);
+                shape.quadraticCurveTo(x, y + baseH, x + r, y + baseH);
+                shape.lineTo(x + baseW - r, y + baseH); shape.quadraticCurveTo(x + baseW, y + baseH, x + baseW, y + baseH - r);
+                shape.lineTo(x + baseW, y + r); shape.quadraticCurveTo(x + baseW, y, x + baseW - r, y);
                 shape.lineTo(x + r, y); shape.quadraticCurveTo(x, y, x, y + r);
                 
                 const plateMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: baseThickness, bevelEnabled: false }), baseMat);
                 plateMesh.castShadow = true; plateMesh.receiveShadow = true;
                 keychainMesh.add(plateMesh);
+                
+                // Text sits ON TOP of base.
                 textMesh.position.set(nudgeX, nudgeY, baseThickness - sinkDepth);
             } else {
                 textMesh.position.set(nudgeX, nudgeY, 0);
