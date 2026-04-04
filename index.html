@@ -46,6 +46,7 @@
             flex-direction: column; 
             gap: 15px; 
             overflow-y: auto;
+            transition: background-color 0.3s;
         }
         
         #canvas-container { flex-grow: 1; position: relative; overflow: hidden; background: #000; }
@@ -79,8 +80,11 @@
             background-color: var(--button-bg); color: white; 
             border: none; border-radius: 4px; cursor: pointer; 
             transition: background 0.3s; margin-top: 10px;
+            flex-shrink: 0;
         }
         button:hover { background-color: var(--button-hover); }
+        
+        canvas { display: block; width: 100%; height: 100%; }
         
         #status-banner {
             position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
@@ -104,7 +108,7 @@
 <body>
 
     <div id="sidebar">
-        <div class="control-group horizontal" title="Toggle theme">
+        <div class="control-group horizontal" title="Toggle between light and dark UI themes.">
             <h2 style="margin: 0;">Settings</h2>
             <select id="themeSelect" style="width: auto; padding: 4px 8px;">
                 <option value="system">System</option>
@@ -113,7 +117,7 @@
             </select>
         </div>
         
-        <div class="control-group" title="The text to generate.">
+        <div class="control-group" title="The words to generate in 3D.">
             <label for="nameInput">Text:</label>
             <input type="text" id="nameInput" value="Maker" maxlength="15">
         </div>
@@ -121,14 +125,14 @@
         <div class="control-group" title="Select a 3D-ready font.">
             <label for="fontSelect">Web Font (Native 3D Format):</label>
             <select id="fontSelect">
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json" selected>Helvetiker Bold</option>
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/optimer_bold.typeface.json">Optimer Bold</option>
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/gentilis_bold.typeface.json">Gentilis Bold</option>
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/droid/droid_sans_bold.typeface.json">Droid Sans Bold</option>
+                <option value="https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json" selected>Helvetiker Bold (Default)</option>
+                <option value="https://unpkg.com/three@0.160.0/examples/fonts/optimer_bold.typeface.json">Optimer Bold (Modern)</option>
+                <option value="https://unpkg.com/three@0.160.0/examples/fonts/gentilis_bold.typeface.json">Gentilis Bold (Serif)</option>
+                <option value="https://unpkg.com/three@0.160.0/examples/fonts/droid/droid_sans_bold.typeface.json">Droid Sans Bold (Tech)</option>
             </select>
         </div>
 
-        <div class="control-group" title="Upload a custom .ttf file.">
+        <div class="control-group" title="Upload a .ttf file from your computer.">
             <label for="fontUpload">Or Upload Local Font (.ttf):</label>
             <input type="file" id="fontUpload" accept=".ttf">
         </div>
@@ -136,11 +140,11 @@
         <hr style="width: 100%; border: 0.5px solid var(--border-color); margin: 5px 0;">
 
         <div class="split-row">
-            <div title="Color for the letters.">
+            <div title="Visual color of the text.">
                 <label for="textColorInput">Text Color</label>
                 <input type="color" id="textColorInput" value="#00d2ff">
             </div>
-            <div title="Color for the plate and ring.">
+            <div title="Visual color of the base and ring.">
                 <label for="plateColorInput">Plate & Ring Color</label>
                 <input type="color" id="plateColorInput" value="#333333">
             </div>
@@ -149,7 +153,7 @@
         <hr style="width: 100%; border: 0.5px solid var(--border-color); margin: 5px 0;">
 
         <div class="split-row">
-            <div title="Shape of the backplate.">
+            <div title="The shape of the backplate.">
                 <label>Base Style</label>
                 <select id="baseStyle">
                     <option value="rounded" selected>Rounded Plate</option>
@@ -157,7 +161,7 @@
                     <option value="none">None (Text Only)</option>
                 </select>
             </div>
-            <div title="Ring attachment side.">
+            <div title="Where the ring attaches.">
                 <label>Ring Position</label>
                 <select id="ringPos">
                     <option value="left" selected>Left</option>
@@ -170,7 +174,7 @@
 
         <hr style="width: 100%; border: 0.5px solid var(--border-color); margin: 5px 0;">
 
-        <div class="control-group" title="Scale of the text.">
+        <div class="control-group" title="Overall size of the letters.">
             <label>Font Size</label>
             <div class="input-row">
                 <input type="range" id="fontSize" min="5" max="30" step="0.5" value="10">
@@ -179,7 +183,7 @@
             </div>
         </div>
 
-        <div class="control-group" title="Z-thickness of text. Now perfectly flat at bottom for faster printing.">
+        <div class="control-group" title="Height of the letters. Optimized for sharp bottom and rounded top.">
             <label>Text Thickness (Z)</label>
             <div class="input-row">
                 <input type="range" id="textDepth" min="0.5" max="10" step="0.5" value="2">
@@ -188,7 +192,7 @@
             </div>
         </div>
 
-        <div class="control-group" title="Set to 0 to keep text perfectly flush on the base. Default is 0.">
+        <div class="control-group" title="Sinks text into the base. Set to 0 to keep text perfectly flush and avoid extra filament swaps.">
             <label>Embed Text into Base (Sink)</label>
             <div class="input-row">
                 <input type="range" id="sinkDepth" min="0" max="2" step="0.1" value="0">
@@ -217,7 +221,7 @@
 
         <hr style="width: 100%; border: 0.5px solid var(--border-color); margin: 5px 0;">
 
-        <div class="control-group" title="Padding around text.">
+        <div class="control-group" title="Extra space around the text.">
             <label>Base Plate Padding</label>
             <div class="input-row">
                 <input type="range" id="basePadding" min="0" max="15" step="0.5" value="2">
@@ -226,7 +230,7 @@
             </div>
         </div>
 
-        <div class="control-group" title="Z-thickness of the plate.">
+        <div class="control-group" title="Thickness of the backplate.">
             <label>Base Thickness (Z)</label>
             <div class="input-row">
                 <input type="range" id="baseThickness" min="0.5" max="10" step="0.5" value="2">
@@ -235,7 +239,7 @@
             </div>
         </div>
 
-        <div class="control-group" title="Hole radius.">
+        <div class="control-group" title="Size of the ring hole.">
             <label>Ring Inner Radius</label>
             <div class="input-row">
                 <input type="range" id="ringSize" min="2" max="15" step="0.5" value="3">
@@ -244,7 +248,7 @@
             </div>
         </div>
 
-        <div class="control-group" title="Ring thickness.">
+        <div class="control-group" title="Thickness of the ring loop.">
             <label>Ring Tube Diameter</label>
             <div class="input-row">
                 <input type="range" id="ringThick" min="0.5" max="5" step="0.1" value="2">
@@ -253,7 +257,7 @@
             </div>
         </div>
 
-        <button id="exportBtn">Download STL</button>
+        <button id="exportBtn" title="Download the 3D model.">Download STL</button>
     </div>
 
     <div id="canvas-container">
@@ -269,8 +273,10 @@
         import { STLExporter } from 'three/addons/exporters/STLExporter.js';
         import { ViewHelper } from 'three/addons/helpers/ViewHelper.js';
 
+        // --- SCENE SETUP ---
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
+
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 1000);
         camera.position.set(0, -60, 70);
 
@@ -278,31 +284,39 @@
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.shadowMap.enabled = true;
-        renderer.autoClear = false;
+        renderer.autoClear = false; // Required for ViewHelper overlay
         container.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
 
+        // --- VIEW HELPER SETUP (Orientation Axis) ---
         const viewHelper = new ViewHelper(camera, renderer.domElement);
         viewHelper.center.set(0, 0, 0);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
         dirLight.position.set(20, -20, 40);
         dirLight.castShadow = true;
         scene.add(dirLight);
 
+        // --- THEME MANAGEMENT ---
         const themeSelect = document.getElementById('themeSelect');
         const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+
         function applyTheme(theme) {
             let isDark = theme === 'dark' || (theme === 'system' && prefersDarkScheme.matches);
             document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
             scene.background = new THREE.Color(isDark ? 0x1a1a20 : 0xe9ecef);
         }
+
         themeSelect.addEventListener('change', (e) => applyTheme(e.target.value));
         applyTheme('system');
 
+        // --- GLOBAL VARIABLES ---
         let loadedFont = null, keychainMesh = null; 
         const fontLoader = new FontLoader(), ttfLoader = new TTFLoader();
         const statusBanner = document.getElementById('status-banner');
@@ -325,7 +339,7 @@
             reader.readAsArrayBuffer(file);
         });
 
-        // --- OPTIMIZED GENERATION LOGIC ---
+        // --- GENERATION LOGIC ---
         function generateKeychain() {
             if (!loadedFont) return;
             const text = document.getElementById('nameInput').value.trim() || "Maker";
@@ -348,39 +362,38 @@
             const textMat = new THREE.MeshStandardMaterial({ color: textColor });
             const baseMat = new THREE.MeshStandardMaterial({ color: plateColor });
 
-            // SIMPLIFIED TEXT: No complex Z-shifts or clipping.
-            // standard extrusion with rounded top bevel only.
+            // Bevel for top rounding
+            const bevelThickness = 0.5;
+            const actualTextDepth = baseStyle === 'none' ? targetTextDepth : targetTextDepth + sinkDepth;
+            
             let textGeo = new TextGeometry(text, { 
                 font: loadedFont, 
                 size: fontSize, 
-                height: targetTextDepth + sinkDepth, 
+                height: actualTextDepth, 
                 bevelEnabled: true, 
-                bevelThickness: 0.2, // Subtle top rounding
-                bevelSize: 0.1,
-                bevelSegments: 3,
-                bevelOffset: 0 // Ensures bottom remains flush
+                bevelThickness: bevelThickness, 
+                bevelSize: 0.2,
+                bevelSegments: 5 
             });
             
             textGeo.computeBoundingBox();
             const centerOffsetX = -0.5 * (textGeo.boundingBox.max.x + textGeo.boundingBox.min.x);
             const centerOffsetY = -0.5 * (textGeo.boundingBox.max.y + textGeo.boundingBox.min.y);
             
-            // Standard alignment: Absolute bottom of text geometry at Z=0
-            textGeo.translate(centerOffsetX, centerOffsetY, -textGeo.boundingBox.min.z);
+            // Correction to ensure vertical wall at plate contact (Sharp Base)
+            textGeo.translate(centerOffsetX, centerOffsetY, -textGeo.boundingBox.min.z + (baseStyle === 'none' ? 0 : -0.1));
 
             const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
             const textHeight = textGeo.boundingBox.max.y - textGeo.boundingBox.min.y;
             const textMesh = new THREE.Mesh(textGeo, textMat);
             textMesh.castShadow = true; textMesh.receiveShadow = true;
 
-            let finalPlateW = textWidth, finalPlateH = textHeight;
-
             if (baseStyle !== 'none') {
                 const shape = new THREE.Shape();
-                finalPlateW = textWidth + (padding * 2);
-                finalPlateH = textHeight + (padding * 2);
-                const r = baseStyle === 'rounded' ? Math.min(padding, finalPlateH / 2, finalPlateW / 2) : 0;
-                const x = -finalPlateW / 2, y = -finalPlateH / 2;
+                const r = baseStyle === 'rounded' ? Math.min(padding, textHeight / 2, textWidth / 2) : 0;
+                const baseW = textWidth + (padding * 2);
+                const baseH = textHeight + (padding * 2);
+                const x = -baseW / 2, y = -baseH / 2;
 
                 shape.moveTo(x, y + r); shape.lineTo(x, y + baseH - r);
                 shape.quadraticCurveTo(x, y + baseH, x + r, y + baseH);
@@ -391,8 +404,6 @@
                 const plateMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: baseThickness, bevelEnabled: false }), baseMat);
                 plateMesh.castShadow = true; plateMesh.receiveShadow = true;
                 keychainMesh.add(plateMesh);
-                
-                // Text sits ON TOP of base.
                 textMesh.position.set(nudgeX, nudgeY, baseThickness - sinkDepth);
             } else {
                 textMesh.position.set(nudgeX, nudgeY, 0);
@@ -403,14 +414,17 @@
             ringGeo.translate(0, 0, ringTubeRadius);
             const ringMesh = new THREE.Mesh(ringGeo, baseMat);
             ringMesh.castShadow = true; ringMesh.receiveShadow = true;
-            let rX = ringPos === 'left' ? -(finalPlateW / 2) - ringRadius : (ringPos === 'right' ? (finalPlateW / 2) + ringRadius : 0);
-            let rY = ringPos === 'top' ? (finalPlateH / 2) + ringRadius : (ringPos === 'bottom' ? -(finalPlateH / 2) - ringRadius : 0);
+            const finalW = baseStyle === 'none' ? textWidth : textWidth + (padding * 2);
+            const finalH = baseStyle === 'none' ? textHeight : textHeight + (padding * 2);
+            let rX = ringPos === 'left' ? -(finalW / 2) - ringRadius : (ringPos === 'right' ? (finalW / 2) + ringRadius : 0);
+            let rY = ringPos === 'top' ? (finalH / 2) + ringRadius : (ringPos === 'bottom' ? -(finalH / 2) - ringRadius : 0);
             ringMesh.position.set(rX, rY, 0);
             keychainMesh.add(ringMesh);
 
             scene.add(keychainMesh);
         }
 
+        // --- EXPORT & UI EVENTS ---
         document.getElementById('exportBtn').addEventListener('click', () => {
             const exporter = new STLExporter();
             const link = document.createElement('a');
@@ -434,11 +448,15 @@
         });
 
         loadSelectedFont();
+
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
+            
             renderer.clear();
             renderer.render(scene, camera);
+            
+            // Render the Orientation Helper in the corner
             viewHelper.render(renderer);
         }
         animate();
