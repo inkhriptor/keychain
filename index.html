@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Keychain STL Generator</title>
     
-    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="icon" type="image/png" href="favicon.png">
     
     <style>
         :root {
@@ -93,6 +93,34 @@
         }
         .status-loading { background: #ffc107; color: #333; }
         .status-error { background: #dc3545; color: white; }
+
+        #resetCameraBtn {
+            position: absolute; bottom: 20px; left: 20px; z-index: 20; 
+            padding: 8px 12px; font-size: 14px; margin-top: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            body { 
+                flex-direction: column; 
+            }
+            #sidebar { 
+                width: 100%; 
+                height: 50vh; 
+                flex-grow: 0; 
+                box-shadow: 0 -2px 5px var(--shadow-color); 
+                order: 2; /* Sidebar on bottom */
+            }
+            #canvas-container { 
+                width: 100%; 
+                height: 50vh; 
+                flex-grow: 0; 
+                order: 1; /* Canvas on top */
+            }
+            #resetCameraBtn {
+                bottom: 15px; left: 15px; padding: 6px 10px; font-size: 12px;
+            }
+        }
     </style>
     
     <script type="importmap">
@@ -261,6 +289,7 @@
 
     <div id="canvas-container">
         <div id="status-banner">Processing...</div>
+        <button id="resetCameraBtn" title="Reset Camera to Default View">Reset View</button>
     </div>
 
     <script type="module">
@@ -286,13 +315,19 @@
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
+        controls.saveState(); // Saves the initial camera setup so we can reset to it
 
         const viewHelper = new ViewHelper(camera, renderer.domElement);
         viewHelper.center.set(0, 0, 0);
-        const clock = new THREE.Clock(); // Required to animate ViewHelper snapping
+        const clock = new THREE.Clock(); 
         
         container.addEventListener('pointerup', (event) => {
             viewHelper.handleClick(event);
+        });
+
+        // Attach the Reset Button
+        document.getElementById('resetCameraBtn').addEventListener('click', () => {
+            controls.reset();
         });
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.5));
@@ -450,7 +485,6 @@
         
         ['baseStyle', 'ringPos', 'textColorInput', 'plateColorInput', 'nameInput'].forEach(id => document.getElementById(id).addEventListener('input', generateKeychain));
         
-        // CRITICAL FIX: Font dropdown is now properly mapped to trigger a download
         document.getElementById('fontSelect').addEventListener('change', loadSelectedFont);
 
         window.addEventListener('resize', () => {
@@ -465,7 +499,6 @@
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
 
-            // Allows smooth snapping animation when clicking the View Cube
             if (viewHelper.animating) {
                 viewHelper.update(delta);
             } else {
@@ -474,7 +507,7 @@
 
             renderer.clear();
             renderer.render(scene, camera);
-            viewHelper.render(renderer); // Render the view cube in the corner
+            viewHelper.render(renderer);
         }
         animate();
     </script>
