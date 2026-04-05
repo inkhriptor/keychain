@@ -149,13 +149,43 @@
             <input type="text" id="nameInput" value="Maker" maxlength="15">
         </div>
 
-        <div class="control-group" title="Select a 3D-ready font.">
-            <label for="fontSelect">Web Font (Native 3D Format):</label>
+        <div class="control-group" title="Select from over 20+ Free Web Fonts.">
+            <label for="fontSelect">Web Font (Native & Google Fonts):</label>
             <select id="fontSelect">
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json" selected>Helvetiker Bold</option>
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/optimer_bold.typeface.json">Optimer Bold</option>
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/gentilis_bold.typeface.json">Gentilis Bold</option>
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/droid/droid_sans_bold.typeface.json">Droid Sans Bold</option>
+                <optgroup label="Classic 3D Fonts (JSON)">
+                    <option value="https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json" selected>Helvetiker Bold</option>
+                    <option value="https://unpkg.com/three@0.160.0/examples/fonts/optimer_bold.typeface.json">Optimer Bold</option>
+                    <option value="https://unpkg.com/three@0.160.0/examples/fonts/gentilis_bold.typeface.json">Gentilis Bold</option>
+                    <option value="https://unpkg.com/three@0.160.0/examples/fonts/droid/droid_sans_bold.typeface.json">Droid Sans Bold</option>
+                </optgroup>
+                <optgroup label="Modern Sans-Serif (TTF)">
+                    <option value="https://api.fontsource.org/v1/fonts/roboto/latin-700-normal.ttf">Roboto Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/open-sans/latin-700-normal.ttf">Open Sans Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/montserrat/latin-700-normal.ttf">Montserrat Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/lato/latin-700-normal.ttf">Lato Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/poppins/latin-700-normal.ttf">Poppins Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/raleway/latin-700-normal.ttf">Raleway Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/ubuntu/latin-700-normal.ttf">Ubuntu Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/rubik/latin-700-normal.ttf">Rubik Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/nunito/latin-700-normal.ttf">Nunito Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/work-sans/latin-700-normal.ttf">Work Sans Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/fira-sans/latin-700-normal.ttf">Fira Sans Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/quicksand/latin-700-normal.ttf">Quicksand Bold</option>
+                </optgroup>
+                <optgroup label="Serif & Display (TTF)">
+                    <option value="https://api.fontsource.org/v1/fonts/merriweather/latin-700-normal.ttf">Merriweather Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/playfair-display/latin-700-normal.ttf">Playfair Display Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/oswald/latin-700-normal.ttf">Oswald Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/bebas-neue/latin-400-normal.ttf">Bebas Neue (Regular)</option>
+                    <option value="https://api.fontsource.org/v1/fonts/abril-fatface/latin-400-normal.ttf">Abril Fatface</option>
+                    <option value="https://api.fontsource.org/v1/fonts/righteous/latin-400-normal.ttf">Righteous</option>
+                </optgroup>
+                <optgroup label="Handwriting & Fun (TTF)">
+                    <option value="https://api.fontsource.org/v1/fonts/pacifico/latin-400-normal.ttf">Pacifico</option>
+                    <option value="https://api.fontsource.org/v1/fonts/lobster/latin-400-normal.ttf">Lobster</option>
+                    <option value="https://api.fontsource.org/v1/fonts/comfortaa/latin-700-normal.ttf">Comfortaa Bold</option>
+                    <option value="https://api.fontsource.org/v1/fonts/permanent-marker/latin-400-normal.ttf">Permanent Marker</option>
+                </optgroup>
             </select>
         </div>
 
@@ -350,23 +380,57 @@
         const fontLoader = new FontLoader(), ttfLoader = new TTFLoader();
         const statusBanner = document.getElementById('status-banner');
 
-        function loadSelectedFont() {
+        // Helper function to manage status notifications
+        function showStatus(message, isError = false) {
+            statusBanner.textContent = message;
+            statusBanner.className = isError ? 'status-error' : 'status-loading';
             statusBanner.style.display = 'block';
-            fontLoader.load(document.getElementById('fontSelect').value, (font) => { 
-                loadedFont = font; 
-                statusBanner.style.display = 'none'; 
-                generateKeychain(); 
-            });
+            if (isError) setTimeout(() => statusBanner.style.display = 'none', 5000);
+        }
+
+        function loadSelectedFont() {
+            const url = document.getElementById('fontSelect').value;
+            if (!url) return; // Ignore if user uploads a local font (clears dropdown)
+            
+            showStatus('Downloading Font...');
+            
+            // Differentiate between raw .ttf files and Three.js JSON formats
+            if (url.endsWith('.ttf')) {
+                ttfLoader.load(url, (json) => {
+                    loadedFont = fontLoader.parse(json);
+                    statusBanner.style.display = 'none';
+                    generateKeychain();
+                }, undefined, (error) => {
+                    console.error("Font Load Error:", error);
+                    showStatus('Failed to load TTF Font.', true);
+                });
+            } else {
+                fontLoader.load(url, (font) => { 
+                    loadedFont = font; 
+                    statusBanner.style.display = 'none'; 
+                    generateKeychain(); 
+                }, undefined, (error) => {
+                    console.error("Font Load Error:", error);
+                    showStatus('Failed to load JSON Font.', true);
+                });
+            }
         }
 
         document.getElementById('fontUpload').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (!file) return;
+            showStatus('Parsing local font...');
             const reader = new FileReader();
             reader.onload = function(e) {
-                loadedFont = fontLoader.parse(ttfLoader.parse(e.target.result));
-                document.getElementById('fontSelect').value = ""; 
-                generateKeychain(); 
+                try {
+                    loadedFont = fontLoader.parse(ttfLoader.parse(e.target.result));
+                    document.getElementById('fontSelect').value = ""; 
+                    statusBanner.style.display = 'none';
+                    generateKeychain(); 
+                } catch (error) {
+                    console.error("TTF Parse Error:", error);
+                    showStatus('Error: Invalid or incompatible font file.', true);
+                }
             };
             reader.readAsArrayBuffer(file);
         });
@@ -394,7 +458,7 @@
             const textMat = new THREE.MeshStandardMaterial({ color: textColor });
             const baseMat = new THREE.MeshStandardMaterial({ color: plateColor });
 
-            // SIMPLIFIED TEXT: No clipping. Standard extrusion with rounded top bevel only.
+            // SIMPLIFIED TEXT: Standard extrusion with rounded top bevel only.
             let textGeo = new TextGeometry(text, { 
                 font: loadedFont, 
                 size: fontSize, 
@@ -410,7 +474,7 @@
             const centerOffsetX = -0.5 * (textGeo.boundingBox.max.x + textGeo.boundingBox.min.x);
             const centerOffsetY = -0.5 * (textGeo.boundingBox.max.y + textGeo.boundingBox.min.y);
             
-            // Standard alignment: Absolute bottom of text geometry perfectly at Z=0
+            // Absolute bottom of text geometry perfectly positioned at Z=0
             textGeo.translate(centerOffsetX, centerOffsetY, -textGeo.boundingBox.min.z);
 
             const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
