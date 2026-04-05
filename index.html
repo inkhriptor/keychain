@@ -46,6 +46,7 @@
             flex-direction: column; 
             gap: 15px; 
             overflow-y: auto;
+            transition: background-color 0.3s;
         }
         
         #canvas-container { flex-grow: 1; position: relative; overflow: hidden; background: #000; }
@@ -79,6 +80,7 @@
             background-color: var(--button-bg); color: white; 
             border: none; border-radius: 4px; cursor: pointer; 
             transition: background 0.3s; margin-top: 10px;
+            flex-shrink: 0;
         }
         button:hover { background-color: var(--button-hover); }
         
@@ -179,7 +181,7 @@
             </div>
         </div>
 
-        <div class="control-group" title="Z-thickness of text. Now perfectly flat at bottom for faster printing.">
+        <div class="control-group" title="Z-thickness of text. Perfectly flat at bottom for faster printing.">
             <label>Text Thickness (Z)</label>
             <div class="input-row">
                 <input type="range" id="textDepth" min="0.5" max="10" step="0.5" value="2">
@@ -278,14 +280,20 @@
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.shadowMap.enabled = true;
-        renderer.autoClear = false;
+        renderer.autoClear = false; // Required for ViewHelper
         container.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
 
+        // --- VIEW HELPER (Interactive View Cube) ---
         const viewHelper = new ViewHelper(camera, renderer.domElement);
         viewHelper.center.set(0, 0, 0);
+        const clock = new THREE.Clock(); // Required to animate ViewHelper snapping
+        
+        container.addEventListener('pointerup', (event) => {
+            viewHelper.handleClick(event);
+        });
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.5));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
@@ -310,7 +318,9 @@
         function loadSelectedFont() {
             statusBanner.style.display = 'block';
             fontLoader.load(document.getElementById('fontSelect').value, (font) => { 
-                loadedFont = font; statusBanner.style.display = 'none'; generateKeychain(); 
+                loadedFont = font; 
+                statusBanner.style.display = 'none'; 
+                generateKeychain(); 
             });
         }
 
@@ -320,7 +330,8 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 loadedFont = fontLoader.parse(ttfLoader.parse(e.target.result));
-                document.getElementById('fontSelect').value = ""; generateKeychain(); 
+                document.getElementById('fontSelect').value = ""; 
+                generateKeychain(); 
             };
             reader.readAsArrayBuffer(file);
         });
@@ -348,8 +359,7 @@
             const textMat = new THREE.MeshStandardMaterial({ color: textColor });
             const baseMat = new THREE.MeshStandardMaterial({ color: plateColor });
 
-            // SIMPLIFIED TEXT: No complex Z-shifts or clipping.
-            // standard extrusion with rounded top bevel only.
+            // SIMPLIFIED TEXT: No clipping. Standard extrusion with rounded top bevel only.
             let textGeo = new TextGeometry(text, { 
                 font: loadedFont, 
                 size: fontSize, 
@@ -365,31 +375,40 @@
             const centerOffsetX = -0.5 * (textGeo.boundingBox.max.x + textGeo.boundingBox.min.x);
             const centerOffsetY = -0.5 * (textGeo.boundingBox.max.y + textGeo.boundingBox.min.y);
             
-            // Standard alignment: Absolute bottom of text geometry at Z=0
+            // Standard alignment: Absolute bottom of text geometry perfectly at Z=0
             textGeo.translate(centerOffsetX, centerOffsetY, -textGeo.boundingBox.min.z);
 
             const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
             const textHeight = textGeo.boundingBox.max.y - textGeo.boundingBox.min.y;
             const textMesh = new THREE.Mesh(textGeo, textMat);
-            textMesh.castShadow = true; textMesh.receiveShadow = true;
+            textMesh.castShadow = true; 
+            textMesh.receiveShadow = true;
 
-            let finalPlateW = textWidth, finalPlateH = textHeight;
+            const baseW = textWidth + (padding * 2);
+            const baseH = textHeight + (padding * 2);
+            let finalW = textWidth;
+            let finalH = textHeight;
 
             if (baseStyle !== 'none') {
+                finalW = baseW;
+                finalH = baseH;
                 const shape = new THREE.Shape();
-                finalPlateW = textWidth + (padding * 2);
-                finalPlateH = textHeight + (padding * 2);
-                const r = baseStyle === 'rounded' ? Math.min(padding, finalPlateH / 2, finalPlateW / 2) : 0;
-                const x = -finalPlateW / 2, y = -finalPlateH / 2;
+                const r = baseStyle === 'rounded' ? Math.min(padding, baseH / 2, baseW / 2) : 0;
+                const x = -baseW / 2, y = -baseH / 2;
 
-                shape.moveTo(x, y + r); shape.lineTo(x, y + baseH - r);
+                shape.moveTo(x, y + r); 
+                shape.lineTo(x, y + baseH - r);
                 shape.quadraticCurveTo(x, y + baseH, x + r, y + baseH);
-                shape.lineTo(x + baseW - r, y + baseH); shape.quadraticCurveTo(x + baseW, y + baseH, x + baseW, y + baseH - r);
-                shape.lineTo(x + baseW, y + r); shape.quadraticCurveTo(x + baseW, y, x + baseW - r, y);
-                shape.lineTo(x + r, y); shape.quadraticCurveTo(x, y, x, y + r);
+                shape.lineTo(x + baseW - r, y + baseH); 
+                shape.quadraticCurveTo(x + baseW, y + baseH, x + baseW, y + baseH - r);
+                shape.lineTo(x + baseW, y + r); 
+                shape.quadraticCurveTo(x + baseW, y, x + baseW - r, y);
+                shape.lineTo(x + r, y); 
+                shape.quadraticCurveTo(x, y, x, y + r);
                 
                 const plateMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: baseThickness, bevelEnabled: false }), baseMat);
-                plateMesh.castShadow = true; plateMesh.receiveShadow = true;
+                plateMesh.castShadow = true; 
+                plateMesh.receiveShadow = true;
                 keychainMesh.add(plateMesh);
                 
                 // Text sits ON TOP of base.
@@ -402,9 +421,11 @@
             const ringGeo = new THREE.TorusGeometry(ringRadius, ringTubeRadius, 16, 32);
             ringGeo.translate(0, 0, ringTubeRadius);
             const ringMesh = new THREE.Mesh(ringGeo, baseMat);
-            ringMesh.castShadow = true; ringMesh.receiveShadow = true;
-            let rX = ringPos === 'left' ? -(finalPlateW / 2) - ringRadius : (ringPos === 'right' ? (finalPlateW / 2) + ringRadius : 0);
-            let rY = ringPos === 'top' ? (finalPlateH / 2) + ringRadius : (ringPos === 'bottom' ? -(finalPlateH / 2) - ringRadius : 0);
+            ringMesh.castShadow = true; 
+            ringMesh.receiveShadow = true;
+            
+            let rX = ringPos === 'left' ? -(finalW / 2) - ringRadius : (ringPos === 'right' ? (finalW / 2) + ringRadius : 0);
+            let rY = ringPos === 'top' ? (finalH / 2) + ringRadius : (ringPos === 'bottom' ? -(finalH / 2) - ringRadius : 0);
             ringMesh.position.set(rX, rY, 0);
             keychainMesh.add(ringMesh);
 
@@ -419,13 +440,18 @@
             link.click();
         });
 
-        const ids = ['fontSize', 'textDepth', 'sinkDepth', 'nudgeX', 'nudgeY', 'basePadding', 'baseThickness', 'ringSize', 'ringThick'];
-        ids.forEach(id => {
+        // --- EVENT LISTENERS ---
+        const inputIds = ['fontSize', 'textDepth', 'sinkDepth', 'nudgeX', 'nudgeY', 'basePadding', 'baseThickness', 'ringSize', 'ringThick'];
+        inputIds.forEach(id => {
             const s = document.getElementById(id), n = document.getElementById(id + 'Num');
             s.addEventListener('input', () => { n.value = s.value; generateKeychain(); });
             n.addEventListener('input', () => { s.value = n.value; generateKeychain(); });
         });
-        ['fontSelect', 'baseStyle', 'ringPos', 'textColorInput', 'plateColorInput', 'nameInput'].forEach(id => document.getElementById(id).addEventListener('input', generateKeychain));
+        
+        ['baseStyle', 'ringPos', 'textColorInput', 'plateColorInput', 'nameInput'].forEach(id => document.getElementById(id).addEventListener('input', generateKeychain));
+        
+        // CRITICAL FIX: Font dropdown is now properly mapped to trigger a download
+        document.getElementById('fontSelect').addEventListener('change', loadSelectedFont);
 
         window.addEventListener('resize', () => {
             camera.aspect = container.clientWidth / container.clientHeight;
@@ -434,12 +460,21 @@
         });
 
         loadSelectedFont();
+
         function animate() {
             requestAnimationFrame(animate);
-            controls.update();
+            const delta = clock.getDelta();
+
+            // Allows smooth snapping animation when clicking the View Cube
+            if (viewHelper.animating) {
+                viewHelper.update(delta);
+            } else {
+                controls.update();
+            }
+
             renderer.clear();
             renderer.render(scene, camera);
-            viewHelper.render(renderer);
+            viewHelper.render(renderer); // Render the view cube in the corner
         }
         animate();
     </script>
