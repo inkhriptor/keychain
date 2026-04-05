@@ -33,9 +33,8 @@
             margin: 0; font-family: sans-serif; display: flex; height: 100vh; 
             background-color: var(--bg-color); color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
-            overflow: hidden;
         }
-        
+
         #sidebar { 
             width: 360px; 
             background: var(--sidebar-bg); 
@@ -48,12 +47,12 @@
             overflow-y: auto;
             transition: background-color 0.3s;
         }
-        
-        #canvas-container { flex-grow: 1; position: relative; overflow: hidden; background: #000; }
-        
+
+        #canvas-container { flex-grow: 1; position: relative; overflow: hidden; }
+
         .control-group { display: flex; flex-direction: column; gap: 5px; }
         .control-group.horizontal { flex-direction: row; align-items: center; justify-content: space-between; }
-        
+
         input[type="text"], input[type="file"], select, input[type="number"], input[type="color"] { 
             padding: 8px; font-size: 14px; 
             border: 1px solid var(--border-color); 
@@ -71,10 +70,10 @@
         .input-row input[type="range"] { flex-grow: 1; cursor: pointer; }
         .input-row input[type="number"] { width: 65px; text-align: right; }
         .unit-label { font-size: 12px; color: var(--text-muted); }
-        
+
         .split-row { display: flex; gap: 10px; }
         .split-row > div { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-        
+
         button { 
             padding: 12px; font-size: 16px; font-weight: bold;
             background-color: var(--button-bg); color: white; 
@@ -83,9 +82,9 @@
             flex-shrink: 0;
         }
         button:hover { background-color: var(--button-hover); }
-        
+
         canvas { display: block; width: 100%; height: 100%; }
-        
+
         #status-banner {
             position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
             padding: 8px 16px; border-radius: 6px; font-weight: bold;
@@ -95,7 +94,7 @@
         .status-loading { background: #ffc107; color: #333; }
         .status-error { background: #dc3545; color: white; }
     </style>
-    
+
     <script type="importmap">
         {
             "imports": {
@@ -116,22 +115,24 @@
                 <option value="light">Light</option>
             </select>
         </div>
-        
+
+        <div class="control-group" title="The letters or words to be generated in 3D.">
         <div class="control-group" title="The words to generate in 3D.">
             <label for="nameInput">Text:</label>
+            <input type="text" id="nameInput" value="Ink" maxlength="15">
             <input type="text" id="nameInput" value="Maker" maxlength="15">
         </div>
 
+        <div class="control-group" title="Select a pre-loaded font style for your text.">
         <div class="control-group" title="Select a 3D-ready font.">
             <label for="fontSelect">Web Font (Native 3D Format):</label>
             <select id="fontSelect">
                 <option value="https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json" selected>Helvetiker Bold (Default)</option>
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/optimer_bold.typeface.json">Optimer Bold (Modern)</option>
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/gentilis_bold.typeface.json">Gentilis Bold (Serif)</option>
-                <option value="https://unpkg.com/three@0.160.0/examples/fonts/droid/droid_sans_bold.typeface.json">Droid Sans Bold (Tech)</option>
+@@ -131,19 +131,19 @@
             </select>
         </div>
 
+        <div class="control-group" title="Upload a custom .ttf font file from your device.">
         <div class="control-group" title="Upload a .ttf file from your computer.">
             <label for="fontUpload">Or Upload Local Font (.ttf):</label>
             <input type="file" id="fontUpload" accept=".ttf">
@@ -140,19 +141,21 @@
         <hr style="width: 100%; border: 0.5px solid var(--border-color); margin: 5px 0;">
 
         <div class="split-row">
+            <div title="Visual color of the text (helps preview dual-color printing).">
             <div title="Visual color of the text.">
                 <label for="textColorInput">Text Color</label>
                 <input type="color" id="textColorInput" value="#00d2ff">
             </div>
+            <div title="Visual color of the base plate and ring.">
             <div title="Visual color of the base and ring.">
                 <label for="plateColorInput">Plate & Ring Color</label>
                 <input type="color" id="plateColorInput" value="#333333">
             </div>
-        </div>
-
+@@ -152,15 +152,15 @@
         <hr style="width: 100%; border: 0.5px solid var(--border-color); margin: 5px 0;">
 
         <div class="split-row">
+            <div title="The shape of the solid backplate under the text.">
             <div title="The shape of the backplate.">
                 <label>Base Style</label>
                 <select id="baseStyle">
@@ -161,46 +164,44 @@
                     <option value="none">None (Text Only)</option>
                 </select>
             </div>
+            <div title="Which side of the keychain the ring attaches to.">
             <div title="Where the ring attaches.">
                 <label>Ring Position</label>
                 <select id="ringPos">
                     <option value="left" selected>Left</option>
-                    <option value="right">Right</option>
-                    <option value="top">Top</option>
-                    <option value="bottom">Bottom</option>
-                </select>
-            </div>
-        </div>
+@@ -173,7 +173,7 @@
 
         <hr style="width: 100%; border: 0.5px solid var(--border-color); margin: 5px 0;">
 
+        <div class="control-group" title="The overall scale and height of the letters.">
         <div class="control-group" title="Overall size of the letters.">
             <label>Font Size</label>
             <div class="input-row">
                 <input type="range" id="fontSize" min="5" max="30" step="0.5" value="10">
-                <input type="number" id="fontSizeNum" min="5" max="50" step="0.5" value="10">
-                <span class="unit-label">mm</span>
+@@ -182,7 +182,7 @@
             </div>
         </div>
 
+        <div class="control-group" title="How far the text extrudes upwards.">
         <div class="control-group" title="Height of the letters. Optimized for sharp bottom and rounded top.">
             <label>Text Thickness (Z)</label>
             <div class="input-row">
                 <input type="range" id="textDepth" min="0.5" max="10" step="0.5" value="2">
-                <input type="number" id="textDepthNum" min="0.5" max="20" step="0.5" value="2">
-                <span class="unit-label">mm</span>
+@@ -191,7 +191,7 @@
             </div>
         </div>
 
+        <div class="control-group" title="Pushes the text down into the plate to ensure a stronger fused bond when printing.">
         <div class="control-group" title="Sinks text into the base. Set to 0 to keep text perfectly flush and avoid extra filament swaps.">
             <label>Embed Text into Base (Sink)</label>
             <div class="input-row">
                 <input type="range" id="sinkDepth" min="0" max="2" step="0.1" value="0">
-                <input type="number" id="sinkDepthNum" min="0" max="5" step="0.1" value="0">
-                <span class="unit-label">mm</span>
+@@ -200,17 +200,17 @@
             </div>
         </div>
 
+        <div class="control-group" title="Manually shift the text horizontally. Useful for fonts with weird internal spacing.">
+            <label>Text Nudge X (Left/Right Offset)</label>
         <div class="control-group" title="Shift text horizontally.">
             <label>Text Nudge X</label>
             <div class="input-row">
@@ -210,44 +211,46 @@
             </div>
         </div>
 
+        <div class="control-group" title="Manually shift the text vertically.">
+            <label>Text Nudge Y (Up/Down Offset)</label>
         <div class="control-group" title="Shift text vertically.">
             <label>Text Nudge Y</label>
             <div class="input-row">
                 <input type="range" id="nudgeY" min="-15" max="15" step="0.5" value="0">
                 <input type="number" id="nudgeYNum" min="-50" max="50" step="0.5" value="0">
-                <span class="unit-label">mm</span>
-            </div>
-        </div>
+@@ -220,7 +220,7 @@
 
         <hr style="width: 100%; border: 0.5px solid var(--border-color); margin: 5px 0;">
 
+        <div class="control-group" title="The distance between the text edges and the outer border of the plate.">
         <div class="control-group" title="Extra space around the text.">
             <label>Base Plate Padding</label>
             <div class="input-row">
                 <input type="range" id="basePadding" min="0" max="15" step="0.5" value="2">
-                <input type="number" id="basePaddingNum" min="0" max="30" step="0.5" value="2">
-                <span class="unit-label">mm</span>
+@@ -229,7 +229,7 @@
             </div>
         </div>
 
+        <div class="control-group" title="The thickness of the solid base underneath the text.">
         <div class="control-group" title="Thickness of the backplate.">
             <label>Base Thickness (Z)</label>
             <div class="input-row">
                 <input type="range" id="baseThickness" min="0.5" max="10" step="0.5" value="2">
-                <input type="number" id="baseThicknessNum" min="0.5" max="20" step="0.5" value="2">
-                <span class="unit-label">mm</span>
+@@ -238,7 +238,7 @@
             </div>
         </div>
 
+        <div class="control-group" title="The size of the hole inside the keychain loop.">
         <div class="control-group" title="Size of the ring hole.">
             <label>Ring Inner Radius</label>
             <div class="input-row">
                 <input type="range" id="ringSize" min="2" max="15" step="0.5" value="3">
-                <input type="number" id="ringSizeNum" min="2" max="30" step="0.5" value="3">
-                <span class="unit-label">mm</span>
+@@ -247,16 +247,16 @@
             </div>
         </div>
 
+        <div class="control-group" title="The physical thickness of the printed ring loop.">
+            <label>Ring Tube Diameter (Thickness)</label>
         <div class="control-group" title="Thickness of the ring loop.">
             <label>Ring Tube Diameter</label>
             <div class="input-row">
@@ -257,21 +260,14 @@
             </div>
         </div>
 
+        <button id="exportBtn" title="Export current model to STL format for 3D printing.">Download STL</button>
         <button id="exportBtn" title="Download the 3D model.">Download STL</button>
     </div>
 
     <div id="canvas-container">
-        <div id="status-banner">Processing...</div>
-    </div>
-
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-        import { TTFLoader } from 'three/addons/loaders/TTFLoader.js';
+@@ -271,296 +271,151 @@
         import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
         import { STLExporter } from 'three/addons/exporters/STLExporter.js';
-        import { ViewHelper } from 'three/addons/helpers/ViewHelper.js';
 
         // --- SCENE SETUP ---
         const container = document.getElementById('canvas-container');
@@ -282,22 +278,18 @@
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
         renderer.shadowMap.enabled = true;
-        renderer.autoClear = false; // Required for ViewHelper overlay
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         container.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-
-        // --- VIEW HELPER SETUP (Orientation Axis) ---
-        const viewHelper = new ViewHelper(camera, renderer.domElement);
-        viewHelper.center.set(0, 0, 0);
-
+        
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
         
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
         dirLight.position.set(20, -20, 40);
         dirLight.castShadow = true;
@@ -311,17 +303,51 @@
             let isDark = theme === 'dark' || (theme === 'system' && prefersDarkScheme.matches);
             document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
             scene.background = new THREE.Color(isDark ? 0x1a1a20 : 0xe9ecef);
+            ambientLight.intensity = isDark ? 0.4 : 0.6;
+            dirLight.intensity = isDark ? 0.8 : 0.6;
         }
 
         themeSelect.addEventListener('change', (e) => applyTheme(e.target.value));
+        prefersDarkScheme.addEventListener('change', () => {
+            if (themeSelect.value === 'system') applyTheme('system');
+        });
         applyTheme('system');
 
         // --- GLOBAL VARIABLES ---
+        let loadedFont = null;
+        let keychainMesh = null; 
+        
+        const fontLoader = new FontLoader();
+        const ttfLoader = new TTFLoader();
         let loadedFont = null, keychainMesh = null; 
         const fontLoader = new FontLoader(), ttfLoader = new TTFLoader();
         const statusBanner = document.getElementById('status-banner');
 
+        function showStatus(message, isError = false) {
+            statusBanner.textContent = message;
+            statusBanner.className = isError ? 'status-error' : 'status-loading';
+            statusBanner.style.display = 'block';
+            if (isError) setTimeout(() => statusBanner.style.display = 'none', 5000);
+        }
+        function hideStatus() { statusBanner.style.display = 'none'; }
+
+        // --- FONT LOADING LOGIC ---
         function loadSelectedFont() {
+            showStatus('Downloading Font...');
+            const fontUrl = document.getElementById('fontSelect').value;
+            
+            fontLoader.load(fontUrl, 
+                (font) => { 
+                    loadedFont = font; 
+                    hideStatus(); 
+                    generateKeychain(); 
+                },
+                undefined, 
+                (error) => { 
+                    console.error("Font Load Error:", error);
+                    showStatus('Failed to load Web Font.', true); 
+                }
+            );
             statusBanner.style.display = 'block';
             fontLoader.load(document.getElementById('fontSelect').value, (font) => { 
                 loadedFont = font; statusBanner.style.display = 'none'; generateKeychain(); 
@@ -331,8 +357,18 @@
         document.getElementById('fontUpload').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (!file) return;
+            showStatus(`Parsing ${file.name}...`);
             const reader = new FileReader();
             reader.onload = function(e) {
+                try {
+                    loadedFont = fontLoader.parse(ttfLoader.parse(e.target.result));
+                    hideStatus(); 
+                    document.getElementById('fontSelect').value = ""; 
+                    generateKeychain(); 
+                } catch (error) { 
+                    console.error("TTF Parse Error:", error);
+                    showStatus(`Error: Incompatible .ttf file.`, true); 
+                }
                 loadedFont = fontLoader.parse(ttfLoader.parse(e.target.result));
                 document.getElementById('fontSelect').value = ""; generateKeychain(); 
             };
@@ -342,9 +378,25 @@
         // --- GENERATION LOGIC ---
         function generateKeychain() {
             if (!loadedFont) return;
+            
+            // Collect all inputs
+            const text = document.getElementById('nameInput').value.trim() || "Empty";
             const text = document.getElementById('nameInput').value.trim() || "Maker";
             const textColor = document.getElementById('textColorInput').value; 
             const plateColor = document.getElementById('plateColorInput').value; 
+            
+            const fontSize = parseFloat(document.getElementById('fontSizeNum').value) || 10;
+            const targetTextDepth = parseFloat(document.getElementById('textDepthNum').value) || 2;
+            const sinkDepth = parseFloat(document.getElementById('sinkDepthNum').value) || 0.1;
+            const nudgeX = parseFloat(document.getElementById('nudgeXNum').value) || 0;
+            const nudgeY = parseFloat(document.getElementById('nudgeYNum').value) || 0;
+            
+            const padding = parseFloat(document.getElementById('basePaddingNum').value) || 2;
+            const baseThickness = parseFloat(document.getElementById('baseThicknessNum').value) || 2;
+            
+            const ringRadius = parseFloat(document.getElementById('ringSizeNum').value) || 3;
+            const ringTubeRadius = (parseFloat(document.getElementById('ringThickNum').value) || 2) / 2;
+            
             const fontSize = parseFloat(document.getElementById('fontSizeNum').value);
             const targetTextDepth = parseFloat(document.getElementById('textDepthNum').value);
             const sinkDepth = parseFloat(document.getElementById('sinkDepthNum').value);
@@ -357,12 +409,52 @@
             const baseStyle = document.getElementById('baseStyle').value;
             const ringPos = document.getElementById('ringPos').value;
 
+            // Cleanup old mesh
+            if (keychainMesh) {
+                scene.remove(keychainMesh);
+                keychainMesh.traverse((child) => {
+                    if (child.isMesh) { child.geometry.dispose(); child.material.dispose(); }
+                });
+            }
+
+            try {
+                keychainMesh = new THREE.Group();
+                const textMat = new THREE.MeshStandardMaterial({ color: textColor, roughness: 0.3, metalness: 0.1 });
+                const baseMat = new THREE.MeshStandardMaterial({ color: plateColor, roughness: 0.3, metalness: 0.1 });
+                const ringMat = new THREE.MeshStandardMaterial({ color: plateColor, roughness: 0.3, metalness: 0.1 }); 
+
+                // --- 1. Text Geometry (With Flush Bottom + Scale correction) ---
+                
+                // If sinking into base, we add the sink depth to the total text height so it doesn't look squished.
+                const actualTextDepth = baseStyle === 'none' ? targetTextDepth : targetTextDepth + sinkDepth;
+
+                let textGeo = new TextGeometry(text, {
+                    font: loadedFont, size: fontSize, height: actualTextDepth, curveSegments: 12,
+                    bevelEnabled: true, bevelThickness: 0.5, bevelSize: 0.2, bevelSegments: 3
+                });
+                
+                // Scale Z to negate secret bevel thickness so it perfectly matches user input
+                textGeo.computeBoundingBox();
+                const currentTextThickness = textGeo.boundingBox.max.z - textGeo.boundingBox.min.z;
+                if (currentTextThickness > 0) {
+                    textGeo.scale(1, 1, actualTextDepth / currentTextThickness);
+                }
+
+                textGeo.computeBoundingBox();
+                const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
+                const textHeight = textGeo.boundingBox.max.y - textGeo.boundingBox.min.y;
+                
+                // Shift Text: Center XY, and push exact Bottom to Z=0
+                const xOffset = -0.5 * (textGeo.boundingBox.max.x + textGeo.boundingBox.min.x);
+                const yOffset = -0.5 * (textGeo.boundingBox.max.y + textGeo.boundingBox.min.y);
+                const zOffsetGeom = -textGeo.boundingBox.min.z;
+                textGeo.translate(xOffset, yOffset, zOffsetGeom);
             if (keychainMesh) scene.remove(keychainMesh);
             keychainMesh = new THREE.Group();
             const textMat = new THREE.MeshStandardMaterial({ color: textColor });
             const baseMat = new THREE.MeshStandardMaterial({ color: plateColor });
 
-            // Bevel for top rounding
+            // Logic for Sharp Bottom / Rounded Top
             const bevelThickness = 0.5;
             const actualTextDepth = baseStyle === 'none' ? targetTextDepth : targetTextDepth + sinkDepth;
             
@@ -380,30 +472,96 @@
             const centerOffsetX = -0.5 * (textGeo.boundingBox.max.x + textGeo.boundingBox.min.x);
             const centerOffsetY = -0.5 * (textGeo.boundingBox.max.y + textGeo.boundingBox.min.y);
             
-            // Correction to ensure vertical wall at plate contact (Sharp Base)
+            // Correction to push the rounded bottom bevel into the base or off the floor, 
+            // ensuring the contact point is a sharp vertical wall.
             textGeo.translate(centerOffsetX, centerOffsetY, -textGeo.boundingBox.min.z + (baseStyle === 'none' ? 0 : -0.1));
 
             const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
             const textHeight = textGeo.boundingBox.max.y - textGeo.boundingBox.min.y;
             const textMesh = new THREE.Mesh(textGeo, textMat);
-            textMesh.castShadow = true; textMesh.receiveShadow = true;
 
             if (baseStyle !== 'none') {
                 const shape = new THREE.Shape();
-                const r = baseStyle === 'rounded' ? Math.min(padding, textHeight / 2, textWidth / 2) : 0;
+                const r = baseStyle === 'rounded' ? Math.min(padding, baseH / 2, baseW / 2) : 0;
+                const x = - (textWidth + (padding * 2)) / 2, y = - (textHeight + (padding * 2)) / 2;
                 const baseW = textWidth + (padding * 2);
                 const baseH = textHeight + (padding * 2);
-                const x = -baseW / 2, y = -baseH / 2;
 
+                const textMesh = new THREE.Mesh(textGeo, textMat);
+                textMesh.castShadow = true; textMesh.receiveShadow = true;
+
+                // --- 2. Base Plate Geometry (Flush Bottom) ---
+                let baseGeo = null;
+                let baseMesh = null;
+                if (baseStyle !== 'none') {
+                    if (baseStyle === 'rounded') {
+                        const shape = new THREE.Shape();
+                        const r = Math.min(padding, baseH / 2, baseW / 2); 
+                        const x = -baseW / 2, y = -baseH / 2;
+                        
+                        shape.moveTo(x, y + r);
+                        shape.lineTo(x, y + baseH - r);
+                        shape.quadraticCurveTo(x, y + baseH, x + r, y + baseH);
+                        shape.lineTo(x + baseW - r, y + baseH);
+                        shape.quadraticCurveTo(x + baseW, y + baseH, x + baseW, y + baseH - r);
+                        shape.lineTo(x + baseW, y + r);
+                        shape.quadraticCurveTo(x + baseW, y, x + baseW - r, y);
+                        shape.lineTo(x + r, y);
+                        shape.quadraticCurveTo(x, y, x, y + r);
+
+                        baseGeo = new THREE.ExtrudeGeometry(shape, { depth: baseThickness, bevelEnabled: false });
+                    } else {
+                        baseGeo = new THREE.BoxGeometry(baseW, baseH, baseThickness);
+                        baseGeo.translate(0, 0, baseThickness / 2); 
+                    }
+
+                    baseMesh = new THREE.Mesh(baseGeo, baseMat);
+                    baseMesh.castShadow = true; baseMesh.receiveShadow = true;
+                    keychainMesh.add(baseMesh);
+                }
+
+                // --- 3. Keychain Ring Logic (Flush Bottom) ---
+                const ringGeo = new THREE.TorusGeometry(ringRadius, ringTubeRadius, 16, 32);
+                ringGeo.translate(0, 0, ringTubeRadius);
+                
+                const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                ringMesh.castShadow = true; ringMesh.receiveShadow = true;
+
+                const attachW = baseStyle === 'none' ? textWidth : baseW;
+                const attachH = baseStyle === 'none' ? textHeight : baseH;
+                const overlap = ringTubeRadius * 0.9; 
                 shape.moveTo(x, y + r); shape.lineTo(x, y + baseH - r);
                 shape.quadraticCurveTo(x, y + baseH, x + r, y + baseH);
                 shape.lineTo(x + baseW - r, y + baseH); shape.quadraticCurveTo(x + baseW, y + baseH, x + baseW, y + baseH - r);
                 shape.lineTo(x + baseW, y + r); shape.quadraticCurveTo(x + baseW, y, x + baseW - r, y);
                 shape.lineTo(x + r, y); shape.quadraticCurveTo(x, y, x, y + r);
+
+                let ringX = 0, ringY = 0;
+                if (ringPos === 'left') { ringX = -(attachW / 2) - ringRadius + overlap; }
+                if (ringPos === 'right') { ringX = (attachW / 2) + ringRadius - overlap; }
+                if (ringPos === 'top') { ringY = (attachH / 2) + ringRadius - overlap; }
+                if (ringPos === 'bottom') { ringY = -(attachH / 2) - ringRadius + overlap; }
+
+                // --- 4. Assembly & Layout Positioning ---
+                if (baseStyle === 'none') {
+                    textMesh.position.set(nudgeX, nudgeY, 0);
+                    ringMesh.position.set(nudgeX + ringX, nudgeY + ringY, 0); 
+                    keychainMesh.add(textMesh);
+                } else {
+                    baseMesh.position.set(0, 0, 0);
+                    ringMesh.position.set(ringX, ringY, 0);
+                    // Push the text Z position down into the plate by the sinkDepth amount
+                    textMesh.position.set(nudgeX, nudgeY, baseThickness - sinkDepth);
+                    keychainMesh.add(textMesh);
+                }
+
+                keychainMesh.add(ringMesh);
+                scene.add(keychainMesh);
                 
-                const plateMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: baseThickness, bevelEnabled: false }), baseMat);
-                plateMesh.castShadow = true; plateMesh.receiveShadow = true;
-                keychainMesh.add(plateMesh);
+            } catch (err) {
+                console.error(err);
+                showStatus("Error generating 3D shape.", true);
+                keychainMesh.add(new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: baseThickness, bevelEnabled: false }), baseMat));
                 textMesh.position.set(nudgeX, nudgeY, baseThickness - sinkDepth);
             } else {
                 textMesh.position.set(nudgeX, nudgeY, 0);
@@ -413,7 +571,6 @@
             const ringGeo = new THREE.TorusGeometry(ringRadius, ringTubeRadius, 16, 32);
             ringGeo.translate(0, 0, ringTubeRadius);
             const ringMesh = new THREE.Mesh(ringGeo, baseMat);
-            ringMesh.castShadow = true; ringMesh.receiveShadow = true;
             const finalW = baseStyle === 'none' ? textWidth : textWidth + (padding * 2);
             const finalH = baseStyle === 'none' ? textHeight : textHeight + (padding * 2);
             let rX = ringPos === 'left' ? -(finalW / 2) - ringRadius : (ringPos === 'right' ? (finalW / 2) + ringRadius : 0);
@@ -424,42 +581,69 @@
             scene.add(keychainMesh);
         }
 
-        // --- EXPORT & UI EVENTS ---
-        document.getElementById('exportBtn').addEventListener('click', () => {
+        // --- EXPORT LOGIC ---
+        function exportSTL() {
+            if (!keychainMesh) return;
             const exporter = new STLExporter();
+            const stlString = exporter.parse(scene); 
+            const blob = new Blob([stlString], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+        document.getElementById('exportBtn').addEventListener('click', () => {
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(new Blob([exporter.parse(scene)], { type: 'text/plain' }));
+            link.style.display = 'none';
+            link.href = url;
+            link.download = `${document.getElementById('nameInput').value || 'Custom'}_keychain.stl`;
+            document.body.appendChild(link);
+            link.href = URL.createObjectURL(new Blob([new STLExporter().parse(scene)], { type: 'text/plain' }));
             link.download = (document.getElementById('nameInput').value || 'keychain') + '.stl'; 
             link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- EVENT LISTENERS ---
+        const changeTriggers = ['fontSelect', 'baseStyle', 'ringPos', 'textColorInput', 'plateColorInput'];
+        changeTriggers.forEach(id => document.getElementById(id).addEventListener('change', generateKeychain));
+        
+        document.getElementById('nameInput').addEventListener('input', generateKeychain);
+        
+        const paramIds = ['fontSize', 'textDepth', 'sinkDepth', 'nudgeX', 'nudgeY', 'basePadding', 'baseThickness', 'ringSize', 'ringThick'];
+        paramIds.forEach(id => {
+            const slider = document.getElementById(id);
+            const numBox = document.getElementById(id + 'Num');
+
+            slider.addEventListener('input', (e) => { numBox.value = e.target.value; generateKeychain(); });
+            numBox.addEventListener('input', (e) => {
+                let val = parseFloat(e.target.value);
+                if (!isNaN(val)) { slider.value = val; generateKeychain(); }
+            });
         });
 
+        document.getElementById('exportBtn').addEventListener('click', exportSTL);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
         const ids = ['fontSize', 'textDepth', 'sinkDepth', 'nudgeX', 'nudgeY', 'basePadding', 'baseThickness', 'ringSize', 'ringThick'];
         ids.forEach(id => {
             const s = document.getElementById(id), n = document.getElementById(id + 'Num');
             s.addEventListener('input', () => { n.value = s.value; generateKeychain(); });
             n.addEventListener('input', () => { s.value = n.value; generateKeychain(); });
         });
+
+        document.getElementById('fontSelect').addEventListener('change', loadSelectedFont);
+        
+        // Initial load
         ['fontSelect', 'baseStyle', 'ringPos', 'textColorInput', 'plateColorInput', 'nameInput'].forEach(id => document.getElementById(id).addEventListener('input', generateKeychain));
-
-        window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
-
         loadSelectedFont();
 
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
-            
-            renderer.clear();
             renderer.render(scene, camera);
-            
-            // Render the Orientation Helper in the corner
-            viewHelper.render(renderer);
         }
+        function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
         animate();
     </script>
 </body>
-</html>
