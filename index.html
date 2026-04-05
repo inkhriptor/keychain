@@ -40,7 +40,7 @@
         }
         
         #sidebar { 
-            width: 360px; 
+            width: 380px; 
             background: var(--sidebar-bg); 
             padding: 20px; 
             box-shadow: 2px 0 5px var(--shadow-color); 
@@ -56,17 +56,20 @@
         .control-group { display: flex; flex-direction: column; gap: 5px; }
         .control-group.horizontal { flex-direction: row; align-items: center; justify-content: space-between; }
         
-        input[type="text"], input[type="file"], select, input[type="number"], input[type="color"] { 
+        input[type="text"], input[type="file"], select, input[type="number"], input[type="color"], textarea { 
             padding: 8px; font-size: 14px; 
             border: 1px solid var(--border-color); 
             border-radius: 4px; 
             background-color: var(--input-bg);
             color: var(--text-color);
             width: 100%; box-sizing: border-box;
+            font-family: sans-serif;
         }
 
+        textarea { resize: vertical; }
         select { cursor: pointer; }
         input[type="color"] { cursor: pointer; height: 40px; border: none; padding: 0; }
+        input[type="checkbox"] { width: auto; transform: scale(1.2); margin-right: 8px; cursor: pointer; }
         .help-text { font-size: 11px; color: var(--text-muted); margin-top: -3px; line-height: 1.3;}
 
         .input-row { display: flex; align-items: center; gap: 10px; }
@@ -101,25 +104,13 @@
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
-            body { 
-                flex-direction: column; 
-            }
+            body { flex-direction: column; }
             #sidebar { 
-                width: 100%; 
-                height: 50vh; 
-                flex-grow: 0; 
-                box-shadow: 0 -2px 5px var(--shadow-color); 
-                order: 2; /* Sidebar on bottom */
+                width: 100%; height: 50vh; flex-grow: 0; 
+                box-shadow: 0 -2px 5px var(--shadow-color); order: 2; 
             }
-            #canvas-container { 
-                width: 100%; 
-                height: 50vh; 
-                flex-grow: 0; 
-                order: 1; /* Canvas on top */
-            }
-            #resetCameraBtn {
-                bottom: 15px; left: 15px; padding: 6px 10px; font-size: 12px;
-            }
+            #canvas-container { width: 100%; height: 50vh; flex-grow: 0; order: 1; }
+            #resetCameraBtn { bottom: 15px; left: 15px; padding: 6px 10px; font-size: 12px; }
         }
     </style>
     
@@ -144,10 +135,35 @@
             </select>
         </div>
         
-        <div class="control-group" title="The text to generate.">
-            <label for="nameInput">Text:</label>
-            <input type="text" id="nameInput" value="Maker" maxlength="15">
+        <div class="control-group" title="Enter multiple lines for batch generation or multi-line keychains.">
+            <label for="nameInput">Text (One per line):</label>
+            <textarea id="nameInput" rows="4">Maker&#10;Space</textarea>
         </div>
+
+        <div class="split-row">
+            <div title="Single multi-line keychain, or Batch mode (one keychain per line).">
+                <label>Mode</label>
+                <select id="genMode">
+                    <option value="single">Single (Multi-line)</option>
+                    <option value="batch" selected>Batch (1 per line)</option>
+                </select>
+            </div>
+            <div title="Arrange on a virtual build plate.">
+                <label>Build Plate Layout</label>
+                <select id="printerPlate">
+                    <option value="none">Free (Center)</option>
+                    <option value="a1mini" selected>A1 Mini (180x180)</option>
+                    <option value="a1">A1 (256x256)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="control-group" style="flex-direction: row; align-items: center; margin-top: 5px;" title="Uncheck to use the whole plate for single-color prints.">
+            <input type="checkbox" id="primeTower" checked>
+            <label for="primeTower" style="cursor: pointer; font-size: 13px;">Avoid Prime Tower (Multi-color)</label>
+        </div>
+
+        <hr style="width: 100%; border: 0.5px solid var(--border-color); margin: 5px 0;">
 
         <div class="control-group" title="Select from over 20+ Free Web Fonts.">
             <label for="fontSelect">Web Font (Native & Google Fonts):</label>
@@ -162,29 +178,16 @@
                     <option value="https://api.fontsource.org/v1/fonts/roboto/latin-700-normal.ttf">Roboto Bold</option>
                     <option value="https://api.fontsource.org/v1/fonts/open-sans/latin-700-normal.ttf">Open Sans Bold</option>
                     <option value="https://api.fontsource.org/v1/fonts/montserrat/latin-700-normal.ttf">Montserrat Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/lato/latin-700-normal.ttf">Lato Bold</option>
                     <option value="https://api.fontsource.org/v1/fonts/poppins/latin-700-normal.ttf">Poppins Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/raleway/latin-700-normal.ttf">Raleway Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/ubuntu/latin-700-normal.ttf">Ubuntu Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/rubik/latin-700-normal.ttf">Rubik Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/nunito/latin-700-normal.ttf">Nunito Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/work-sans/latin-700-normal.ttf">Work Sans Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/fira-sans/latin-700-normal.ttf">Fira Sans Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/quicksand/latin-700-normal.ttf">Quicksand Bold</option>
                 </optgroup>
                 <optgroup label="Serif & Display (TTF)">
                     <option value="https://api.fontsource.org/v1/fonts/merriweather/latin-700-normal.ttf">Merriweather Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/playfair-display/latin-700-normal.ttf">Playfair Display Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/oswald/latin-700-normal.ttf">Oswald Bold</option>
                     <option value="https://api.fontsource.org/v1/fonts/bebas-neue/latin-400-normal.ttf">Bebas Neue (Regular)</option>
-                    <option value="https://api.fontsource.org/v1/fonts/abril-fatface/latin-400-normal.ttf">Abril Fatface</option>
                     <option value="https://api.fontsource.org/v1/fonts/righteous/latin-400-normal.ttf">Righteous</option>
                 </optgroup>
                 <optgroup label="Handwriting & Fun (TTF)">
                     <option value="https://api.fontsource.org/v1/fonts/pacifico/latin-400-normal.ttf">Pacifico</option>
-                    <option value="https://api.fontsource.org/v1/fonts/lobster/latin-400-normal.ttf">Lobster</option>
                     <option value="https://api.fontsource.org/v1/fonts/comfortaa/latin-700-normal.ttf">Comfortaa Bold</option>
-                    <option value="https://api.fontsource.org/v1/fonts/permanent-marker/latin-400-normal.ttf">Permanent Marker</option>
                 </optgroup>
             </select>
         </div>
@@ -334,7 +337,7 @@
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 1000);
-        camera.position.set(0, -60, 70);
+        camera.position.set(0, -100, 120);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(container.clientWidth, container.clientHeight);
@@ -345,26 +348,28 @@
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.saveState(); // Saves the initial camera setup so we can reset to it
+        controls.saveState(); 
 
         const viewHelper = new ViewHelper(camera, renderer.domElement);
         viewHelper.center.set(0, 0, 0);
         const clock = new THREE.Clock(); 
         
-        container.addEventListener('pointerup', (event) => {
-            viewHelper.handleClick(event);
-        });
-
-        // Attach the Reset Button
-        document.getElementById('resetCameraBtn').addEventListener('click', () => {
-            controls.reset();
-        });
+        container.addEventListener('pointerup', (event) => { viewHelper.handleClick(event); });
+        document.getElementById('resetCameraBtn').addEventListener('click', () => { controls.reset(); });
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.5));
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
         dirLight.position.set(20, -20, 40);
         dirLight.castShadow = true;
         scene.add(dirLight);
+
+        // Group to hold only keychains (for exporting)
+        let keychainMesh = new THREE.Group();
+        scene.add(keychainMesh);
+
+        // Group to hold visual helpers (bed grid, prime tower zone)
+        let helperGroup = new THREE.Group();
+        scene.add(helperGroup);
 
         const themeSelect = document.getElementById('themeSelect');
         const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
@@ -376,11 +381,10 @@
         themeSelect.addEventListener('change', (e) => applyTheme(e.target.value));
         applyTheme('system');
 
-        let loadedFont = null, keychainMesh = null; 
+        let loadedFont = null; 
         const fontLoader = new FontLoader(), ttfLoader = new TTFLoader();
         const statusBanner = document.getElementById('status-banner');
 
-        // Helper function to manage status notifications
         function showStatus(message, isError = false) {
             statusBanner.textContent = message;
             statusBanner.className = isError ? 'status-error' : 'status-loading';
@@ -390,29 +394,17 @@
 
         function loadSelectedFont() {
             const url = document.getElementById('fontSelect').value;
-            if (!url) return; // Ignore if user uploads a local font (clears dropdown)
-            
+            if (!url) return;
             showStatus('Downloading Font...');
-            
-            // Differentiate between raw .ttf files and Three.js JSON formats
             if (url.endsWith('.ttf')) {
                 ttfLoader.load(url, (json) => {
                     loadedFont = fontLoader.parse(json);
-                    statusBanner.style.display = 'none';
-                    generateKeychain();
-                }, undefined, (error) => {
-                    console.error("Font Load Error:", error);
-                    showStatus('Failed to load TTF Font.', true);
-                });
+                    statusBanner.style.display = 'none'; generateKeychain();
+                }, undefined, () => { showStatus('Failed to load TTF Font.', true); });
             } else {
                 fontLoader.load(url, (font) => { 
-                    loadedFont = font; 
-                    statusBanner.style.display = 'none'; 
-                    generateKeychain(); 
-                }, undefined, (error) => {
-                    console.error("Font Load Error:", error);
-                    showStatus('Failed to load JSON Font.', true);
-                });
+                    loadedFont = font; statusBanner.style.display = 'none'; generateKeychain(); 
+                }, undefined, () => { showStatus('Failed to load JSON Font.', true); });
             }
         }
 
@@ -425,76 +417,69 @@
                 try {
                     loadedFont = fontLoader.parse(ttfLoader.parse(e.target.result));
                     document.getElementById('fontSelect').value = ""; 
-                    statusBanner.style.display = 'none';
-                    generateKeychain(); 
-                } catch (error) {
-                    console.error("TTF Parse Error:", error);
-                    showStatus('Error: Invalid or incompatible font file.', true);
-                }
+                    statusBanner.style.display = 'none'; generateKeychain(); 
+                } catch (error) { showStatus('Error: Invalid font file.', true); }
             };
             reader.readAsArrayBuffer(file);
         });
 
-        // --- OPTIMIZED GENERATION LOGIC ---
-        function generateKeychain() {
-            if (!loadedFont) return;
-            const text = document.getElementById('nameInput').value.trim() || "Maker";
-            const textColor = document.getElementById('textColorInput').value; 
-            const plateColor = document.getElementById('plateColorInput').value; 
-            const fontSize = parseFloat(document.getElementById('fontSizeNum').value);
-            const targetTextDepth = parseFloat(document.getElementById('textDepthNum').value);
-            const sinkDepth = parseFloat(document.getElementById('sinkDepthNum').value);
-            const nudgeX = parseFloat(document.getElementById('nudgeXNum').value);
-            const nudgeY = parseFloat(document.getElementById('nudgeYNum').value);
-            const padding = parseFloat(document.getElementById('basePaddingNum').value);
-            const baseThickness = parseFloat(document.getElementById('baseThicknessNum').value);
-            const ringRadius = parseFloat(document.getElementById('ringSizeNum').value);
-            const ringTubeRadius = parseFloat(document.getElementById('ringThickNum').value) / 2;
-            const baseStyle = document.getElementById('baseStyle').value;
-            const ringPos = document.getElementById('ringPos').value;
+        // Function to build a single keychain item from an array of lines
+        function buildSingleKeychain(linesArray, options) {
+            const group = new THREE.Group();
+            let textMeshes = [];
+            let totalHeight = 0;
+            let maxWidth = 0;
+            const lineGap = 2;
 
-            if (keychainMesh) scene.remove(keychainMesh);
-            keychainMesh = new THREE.Group();
-            const textMat = new THREE.MeshStandardMaterial({ color: textColor });
-            const baseMat = new THREE.MeshStandardMaterial({ color: plateColor });
+            // 1. Generate text geometries with OPTIMIZED polygon counts to reduce STL size
+            linesArray.forEach((line) => {
+                let textGeo = new TextGeometry(line, { 
+                    font: loadedFont, 
+                    size: options.fontSize, 
+                    height: options.targetTextDepth + options.sinkDepth, 
+                    curveSegments: 4, // OPTIMIZED: Down from 12. Greatly reduces STL file size.
+                    bevelEnabled: true, 
+                    bevelThickness: 0.2, 
+                    bevelSize: 0.1, 
+                    bevelSegments: 2, // OPTIMIZED: Down from 3.
+                    bevelOffset: 0
+                });
+                textGeo.computeBoundingBox();
+                const w = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
+                const h = textGeo.boundingBox.max.y - textGeo.boundingBox.min.y;
+                textGeo.translate(-0.5 * (textGeo.boundingBox.max.x + textGeo.boundingBox.min.x), -0.5 * (textGeo.boundingBox.max.y + textGeo.boundingBox.min.y), -textGeo.boundingBox.min.z);
+                
+                const mesh = new THREE.Mesh(textGeo, options.textMat);
+                mesh.userData = { w: w, h: h };
+                textMeshes.push(mesh);
 
-            // SIMPLIFIED TEXT: Standard extrusion with rounded top bevel only.
-            let textGeo = new TextGeometry(text, { 
-                font: loadedFont, 
-                size: fontSize, 
-                height: targetTextDepth + sinkDepth, 
-                bevelEnabled: true, 
-                bevelThickness: 0.2, // Subtle top rounding
-                bevelSize: 0.1,
-                bevelSegments: 3,
-                bevelOffset: 0 // Ensures bottom remains flush
+                if (w > maxWidth) maxWidth = w;
+                totalHeight += h;
             });
-            
-            textGeo.computeBoundingBox();
-            const centerOffsetX = -0.5 * (textGeo.boundingBox.max.x + textGeo.boundingBox.min.x);
-            const centerOffsetY = -0.5 * (textGeo.boundingBox.max.y + textGeo.boundingBox.min.y);
-            
-            // Absolute bottom of text geometry perfectly positioned at Z=0
-            textGeo.translate(centerOffsetX, centerOffsetY, -textGeo.boundingBox.min.z);
 
-            const textWidth = textGeo.boundingBox.max.x - textGeo.boundingBox.min.x;
-            const textHeight = textGeo.boundingBox.max.y - textGeo.boundingBox.min.y;
-            const textMesh = new THREE.Mesh(textGeo, textMat);
-            textMesh.castShadow = true; 
-            textMesh.receiveShadow = true;
+            totalHeight += (linesArray.length - 1) * lineGap;
 
-            const baseW = textWidth + (padding * 2);
-            const baseH = textHeight + (padding * 2);
-            let finalW = textWidth;
-            let finalH = textHeight;
+            // 2. Arrange texts vertically
+            let currentY = totalHeight / 2;
+            textMeshes.forEach((mesh) => {
+                mesh.position.y = currentY - (mesh.userData.h / 2);
+                currentY -= (mesh.userData.h + lineGap);
+                group.add(mesh);
+            });
 
-            if (baseStyle !== 'none') {
-                finalW = baseW;
-                finalH = baseH;
+            // 3. Build Base Plate
+            const baseW = maxWidth + (options.padding * 2);
+            const baseH = totalHeight + (options.padding * 2);
+            let finalW = maxWidth;
+            let finalH = totalHeight;
+
+            if (options.baseStyle !== 'none') {
+                finalW = baseW; finalH = baseH;
                 const shape = new THREE.Shape();
-                const r = baseStyle === 'rounded' ? Math.min(padding, baseH / 2, baseW / 2) : 0;
+                const r = options.baseStyle === 'rounded' ? Math.min(options.padding, baseH / 2, baseW / 2) : 0;
                 const x = -baseW / 2, y = -baseH / 2;
 
+                // Create shape with curve segments explicitly set lower to match size reduction
                 shape.moveTo(x, y + r); 
                 shape.lineTo(x, y + baseH - r);
                 shape.quadraticCurveTo(x, y + baseH, x + r, y + baseH);
@@ -505,37 +490,143 @@
                 shape.lineTo(x + r, y); 
                 shape.quadraticCurveTo(x, y, x, y + r);
                 
-                const plateMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: baseThickness, bevelEnabled: false }), baseMat);
-                plateMesh.castShadow = true; 
-                plateMesh.receiveShadow = true;
-                keychainMesh.add(plateMesh);
+                // Extrude settings optimized
+                const plateMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: options.baseThickness, bevelEnabled: false, curveSegments: 6 }), options.baseMat);
+                plateMesh.castShadow = true; plateMesh.receiveShadow = true;
+                group.add(plateMesh);
                 
-                // Text sits ON TOP of base.
-                textMesh.position.set(nudgeX, nudgeY, baseThickness - sinkDepth);
+                textMeshes.forEach(m => m.position.set(m.position.x + options.nudgeX, m.position.y + options.nudgeY, options.baseThickness - options.sinkDepth));
             } else {
-                textMesh.position.set(nudgeX, nudgeY, 0);
+                textMeshes.forEach(m => m.position.set(m.position.x + options.nudgeX, m.position.y + options.nudgeY, 0));
             }
-            keychainMesh.add(textMesh);
 
-            const ringGeo = new THREE.TorusGeometry(ringRadius, ringTubeRadius, 16, 32);
-            ringGeo.translate(0, 0, ringTubeRadius);
-            const ringMesh = new THREE.Mesh(ringGeo, baseMat);
-            ringMesh.castShadow = true; 
-            ringMesh.receiveShadow = true;
+            // 4. Build Ring (Optimized Segments)
+            const ringGeo = new THREE.TorusGeometry(options.ringRadius, options.ringTubeRadius, 10, 24); // OPTIMIZED: Down from 16,32
+            ringGeo.translate(0, 0, options.ringTubeRadius);
+            const ringMesh = new THREE.Mesh(ringGeo, options.baseMat);
+            ringMesh.castShadow = true; ringMesh.receiveShadow = true;
             
-            let rX = ringPos === 'left' ? -(finalW / 2) - ringRadius : (ringPos === 'right' ? (finalW / 2) + ringRadius : 0);
-            let rY = ringPos === 'top' ? (finalH / 2) + ringRadius : (ringPos === 'bottom' ? -(finalH / 2) - ringRadius : 0);
+            let rX = options.ringPos === 'left' ? -(finalW / 2) - options.ringRadius : (options.ringPos === 'right' ? (finalW / 2) + options.ringRadius : 0);
+            let rY = options.ringPos === 'top' ? (finalH / 2) + options.ringRadius : (options.ringPos === 'bottom' ? -(finalH / 2) - options.ringRadius : 0);
             ringMesh.position.set(rX, rY, 0);
-            keychainMesh.add(ringMesh);
+            group.add(ringMesh);
 
-            scene.add(keychainMesh);
+            return group;
+        }
+
+        function generateKeychain() {
+            if (!loadedFont) return;
+            
+            keychainMesh.clear();
+            helperGroup.clear();
+            
+            // FIX: Reset the global position of the group so it doesn't remember "Free" mode offsets!
+            keychainMesh.position.set(0, 0, 0);
+
+            const rawText = document.getElementById('nameInput').value;
+            const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length === 0) lines.push("Empty");
+
+            const mode = document.getElementById('genMode').value;
+            const plateType = document.getElementById('printerPlate').value;
+
+            // Collect Options
+            const options = {
+                textMat: new THREE.MeshStandardMaterial({ color: document.getElementById('textColorInput').value }),
+                baseMat: new THREE.MeshStandardMaterial({ color: document.getElementById('plateColorInput').value }),
+                fontSize: parseFloat(document.getElementById('fontSizeNum').value),
+                targetTextDepth: parseFloat(document.getElementById('textDepthNum').value),
+                sinkDepth: parseFloat(document.getElementById('sinkDepthNum').value),
+                nudgeX: parseFloat(document.getElementById('nudgeXNum').value),
+                nudgeY: parseFloat(document.getElementById('nudgeYNum').value),
+                padding: parseFloat(document.getElementById('basePaddingNum').value),
+                baseThickness: parseFloat(document.getElementById('baseThicknessNum').value),
+                ringRadius: parseFloat(document.getElementById('ringSizeNum').value),
+                ringTubeRadius: parseFloat(document.getElementById('ringThickNum').value) / 2,
+                baseStyle: document.getElementById('baseStyle').value,
+                ringPos: document.getElementById('ringPos').value,
+                avoidPrimeTower: document.getElementById('primeTower').checked
+            };
+
+            let generatedGroups = [];
+
+            if (mode === 'single') {
+                generatedGroups.push(buildSingleKeychain(lines, options));
+            } else {
+                lines.forEach(line => {
+                    generatedGroups.push(buildSingleKeychain([line], options));
+                });
+            }
+
+            // Layout Engine
+            if (plateType === 'none') {
+                let offsetX = 0;
+                generatedGroups.forEach(g => {
+                    const box = new THREE.Box3().setFromObject(g);
+                    g.position.x = offsetX - box.min.x;
+                    keychainMesh.add(g);
+                    offsetX += (box.max.x - box.min.x) + 5;
+                });
+                const fullBox = new THREE.Box3().setFromObject(keychainMesh);
+                keychainMesh.position.x = - (fullBox.max.x + fullBox.min.x) / 2;
+                keychainMesh.position.y = - (fullBox.max.y + fullBox.min.y) / 2;
+            } else {
+                const plateSize = plateType === 'a1mini' ? 180 : 256;
+                
+                const grid = new THREE.GridHelper(plateSize, plateSize / 10, 0x888888, 0x444444);
+                grid.rotation.x = Math.PI / 2;
+                grid.position.z = -0.1;
+                helperGroup.add(grid);
+
+                const ptZone = 45; 
+                const ptVis = new THREE.Mesh(
+                    new THREE.PlaneGeometry(ptZone, ptZone),
+                    new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.3, depthWrite: false })
+                );
+                ptVis.position.set(plateSize/2 - ptZone/2, plateSize/2 - ptZone/2, 0);
+                ptVis.visible = options.avoidPrimeTower; // Hide if disabled
+                helperGroup.add(ptVis);
+
+                const margin = 5;
+                let cursorX = -plateSize/2 + margin;
+                let cursorY = plateSize/2 - margin;
+                let rowH = 0;
+                const gap = 5;
+
+                generatedGroups.forEach((g) => {
+                    const box = new THREE.Box3().setFromObject(g);
+                    const w = box.max.x - box.min.x;
+                    const h = box.max.y - box.min.y;
+
+                    // Next Row check
+                    if (cursorX + w > plateSize/2 - margin) {
+                        cursorX = -plateSize/2 + margin;
+                        cursorY -= (rowH + gap);
+                        rowH = 0;
+                    }
+
+                    // Prime Tower check
+                    if (options.avoidPrimeTower && cursorY > plateSize/2 - ptZone - margin && cursorX + w > plateSize/2 - ptZone - margin) {
+                        cursorX = -plateSize/2 + margin;
+                        cursorY -= (rowH > 0 ? rowH : h) + gap;
+                        rowH = 0;
+                    }
+
+                    g.position.x = cursorX - box.min.x;
+                    g.position.y = cursorY - box.max.y;
+                    keychainMesh.add(g);
+
+                    cursorX += w + gap;
+                    rowH = Math.max(rowH, h);
+                });
+            }
         }
 
         document.getElementById('exportBtn').addEventListener('click', () => {
             const exporter = new STLExporter();
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(new Blob([exporter.parse(scene)], { type: 'text/plain' }));
-            link.download = (document.getElementById('nameInput').value || 'keychain') + '.stl'; 
+            link.href = URL.createObjectURL(new Blob([exporter.parse(keychainMesh)], { type: 'text/plain' }));
+            link.download = 'keychain_batch.stl'; 
             link.click();
         });
 
@@ -547,7 +638,9 @@
             n.addEventListener('input', () => { s.value = n.value; generateKeychain(); });
         });
         
-        ['baseStyle', 'ringPos', 'textColorInput', 'plateColorInput', 'nameInput'].forEach(id => document.getElementById(id).addEventListener('input', generateKeychain));
+        ['baseStyle', 'ringPos', 'textColorInput', 'plateColorInput', 'nameInput', 'genMode', 'printerPlate', 'primeTower'].forEach(id => {
+            document.getElementById(id).addEventListener('input', generateKeychain);
+        });
         
         document.getElementById('fontSelect').addEventListener('change', loadSelectedFont);
 
